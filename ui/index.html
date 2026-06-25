@@ -1098,62 +1098,125 @@
     }
 
     // ============================================
+    // API Endpoints (預設指向本機 5050，可改成 NAS IP)
+    // ============================================
+    const API_BASE = 'http://localhost:5050';
+
+    // 通用 API 呼叫（自動切換 Mock / 真實）
+    async function callPredict(type, formData) {
+      // 若 API 未啟動，則 fallback 到 mock 計算
+      try {
+        const endpoint = type === 'automobile' ? '/predict/auto' : '/predict/moto';
+        const res = await fetch(API_BASE + endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error('API error ' + res.status);
+        return await res.json();
+      } catch (_) {
+        // API 離線時 fallback 到 UI 端 mock 計算
+        const price = type === 'automobile'
+          ? calculateAutoPrice(formData)
+          : calculateMotoPrice(formData);
+        return {
+          predicted_price: price,
+          price_lower: Math.round(price * 0.85),
+          price_upper: Math.round(price * 1.15),
+          confidence: 'low',
+          note: '（API 離線，僅供參考）'
+        };
+      }
+    }
+
+    // ============================================
     // Form Submission Handlers
     // ============================================
-    document.getElementById('automobile-form').addEventListener('submit', function(e) {
+    document.getElementById('automobile-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      
+
+      // 顯示 loading 狀態
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = '估價中…';
+
       const formData = {
         brand: document.getElementById('auto-brand').value,
         model: document.getElementById('auto-model').value,
-        year: document.getElementById('auto-year').value,
-        cc: document.getElementById('auto-cc').value,
-        km: document.getElementById('auto-km').value,
+        year: parseInt(document.getElementById('auto-year').value),
+        month: 1,
+        cc: parseInt(document.getElementById('auto-cc').value) || 1500,
         grade: document.getElementById('auto-grade').value,
-        transmission: document.getElementById('auto-transmission').value
+        mileage_km: parseInt(document.getElementById('auto-km').value) || 0,
+        mileage_available: document.getElementById('auto-km').value ? 1 : 0,
+        transmission: document.getElementById('auto-transmission').value,
+        tax_total: 0,
+        auction_date: new Date().toISOString().slice(0, 10)
       };
 
-      const price = calculateAutoPrice(formData);
-      const basePrice = getBasePrice('automobile', formData);
-      const cpRating = calculateCPRating(price, basePrice);
-      const lowPrice = Math.round(price * 0.9);
-      const highPrice = Math.round(price * 1.1);
+      try {
+        const result = await callPredict('automobile', formData);
+        const price = result.predicted_price;
+        const lowPrice = result.price_lower;
+        const highPrice = result.price_upper;
 
-      displayAutoResult(price, lowPrice, highPrice, cpRating);
-      storeComparisonData('automobile', formData, price, cpRating);
+        const basePrice = getBasePrice('automobile', formData);
+        const cpRating = calculateCPRating(price, basePrice);
+
+        displayAutoResult(price, lowPrice, highPrice, cpRating, result.note || '');
+        storeComparisonData('automobile', formData, price, cpRating);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '送出估價';
+      }
     });
 
-    document.getElementById('motorcycle-form').addEventListener('submit', function(e) {
+    document.getElementById('motorcycle-form').addEventListener('submit', async function(e) {
       e.preventDefault();
-      
+
+      const btn = this.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = '估價中…';
+
       const formData = {
         brand: document.getElementById('moto-brand').value,
         model: document.getElementById('moto-model').value,
-        year: document.getElementById('moto-year').value,
-        km: document.getElementById('moto-km').value,
-        grade: document.getElementById('moto-grade').value
+        year: parseInt(document.getElementById('moto-year').value),
+        month: 1,
+        cc: 155,
+        grade: document.getElementById('moto-grade').value,
+        mileage_km: parseInt(document.getElementById('moto-km').value) || 0,
+        mileage_available: document.getElementById('moto-km').value ? 1 : 0,
+        auction_date: new Date().toISOString().slice(0, 10)
       };
 
-      const price = calculateMotoPrice(formData);
-      const basePrice = getBasePrice('motorcycle', formData);
-      const cpRating = calculateCPRating(price, basePrice);
-      const lowPrice = Math.round(price * 0.9);
-      const highPrice = Math.round(price * 1.1);
+      try {
+        const result = await callPredict('motorcycle', formData);
+        const price = result.predicted_price;
+        const lowPrice = result.price_lower;
+        const highPrice = result.price_upper;
 
-      displayMotoResult(price, lowPrice, highPrice, cpRating);
-      storeComparisonData('motorcycle', formData, price, cpRating);
+        const basePrice = getBasePrice('motorcycle', formData);
+        const cpRating = calculateCPRating(price, basePrice);
+
+        displayMotoResult(price, lowPrice, highPrice, cpRating, result.note || '');
+        storeComparisonData('motorcycle', formData, price, cpRating);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '送出估價';
+      }
     });
 
     // ============================================
     // Display Results
     // ============================================
-    function displayAutoResult(price, lowPrice, highPrice, cpRating) {
+    function displayAutoResult(price, lowPrice, highPrice, cpRating, note) {
       const resultSection = document.getElementById('automobile-result');
       resultSection.style.display = 'block';
-      
+
       document.getElementById('auto-price').textContent = `${lowPrice.toLocaleString()} ~ ${highPrice.toLocaleString()}`;
       document.getElementById('auto-suggested').textContent = `NT$ ${price.toLocaleString()}`;
-      document.getElementById('auto-comment').textContent = cpComments[cpRating];
+      document.getElementById('auto-comment').textContent = (note || '') + (note ? ' ' : '') + cpComments[cpRating];
       
       // Update rating stars
       const ratingContainer = document.getElementById('auto-rating');
@@ -1180,13 +1243,13 @@
       resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function displayMotoResult(price, lowPrice, highPrice, cpRating) {
+    function displayMotoResult(price, lowPrice, highPrice, cpRating, note) {
       const resultSection = document.getElementById('motorcycle-result');
       resultSection.style.display = 'block';
-      
+
       document.getElementById('moto-price').textContent = `${lowPrice.toLocaleString()} ~ ${highPrice.toLocaleString()}`;
       document.getElementById('moto-suggested').textContent = `NT$ ${price.toLocaleString()}`;
-      document.getElementById('moto-comment').textContent = cpComments[cpRating];
+      document.getElementById('moto-comment').textContent = (note || '') + (note ? ' ' : '') + cpComments[cpRating];
       
       // Update rating stars
       const ratingContainer = document.getElementById('moto-rating');
