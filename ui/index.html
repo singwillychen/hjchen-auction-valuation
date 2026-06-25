@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>行將估價系統 - 汽車與機車估價</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       CSS Variables - Dark Theme Color Palette
+       ============================================ */
+    :root {
+      /* Background colors */
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-card: #22262f;
+      --bg-input: #2a2f3a;
+      --bg-hover: #2d323f;
+      
+      /* Text colors */
+      --text-primary: #f0f2f5;
+      --text-secondary: #a0a6b5;
+      --text-muted: #6b7280;
+      
+      /* Accent colors */
+      --accent-primary: #3b82f6;
+      --accent-secondary: #60a5fa;
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      
+      /* Border colors */
+      --border-primary: #374151;
+      --border-focus: #3b82f6;
+      
+      /* Shadows */
+      --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+      --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+      
+      /* Spacing */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      
+      /* Border radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      
+      /* Transitions */
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.3s ease;
+    }
+
+    /* ============================================
+       Base Styles & Reset
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       Layout Containers
+       ============================================ */
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-lg);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+      padding: var(--spacing-xl) 0;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    /* ============================================
+       Tab Navigation
+       ============================================ */
+    .tab-container {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-xl);
+      background: var(--bg-secondary);
+      padding: var(--spacing-sm);
+      border-radius: var(--radius-lg);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-normal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .tab-icon {
+      font-size: 1.25rem;
+    }
+
+    /* ============================================
+       Tab Content
+       ============================================ */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================
+       Cards & Containers
+       ============================================ */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-primary);
+      transition: all var(--transition-normal);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-focus);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .card-title-icon {
+      font-size: 1.5rem;
+    }
+
+    /* ============================================
+       Form Elements
+       ============================================ */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .form-group label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--spacing-md);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a6b5' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .form-group select option {
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    /* Full width form group */
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* ============================================
+       Buttons
+       ============================================ */
+    .btn-group {
+      display: flex;
+      gap: var(--spacing-md);
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: var(--spacing-md) var(--spacing-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-focus);
+    }
+
+    .btn-success {
+      background: var(--accent-success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: var(--accent-danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* ============================================
+       Result Display
+       ============================================ */
+    .result-section {
+      margin-top: var(--spacing-xl);
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .result-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .price-range {
+      display: flex;
+      align-items: baseline;
+      gap: var(--spacing-sm);
+    }
+
+    .price-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .price-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent-success);
+    }
+
+    .price-unit {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    .result-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+    }
+
+    .result-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+
+    .result-item-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .result-item-value {
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+
+    .rating {
+      display: flex;
+      gap: 2px;
+    }
+
+    .rating-star {
+      font-size: 1.25rem;
+      color: var(--accent-warning);
+    }
+
+    .rating-star.empty {
+      color: var(--border-primary);
+    }
+
+    /* ============================================
+       Historical Price Reference
+       ============================================ */
+    .history-section {
+      margin-top: var(--spacing-lg);
+      padding: var(--spacing-lg);
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+    }
+
+    .history-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-secondary);
+    }
+
+    .history-bar {
+      height: 24px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .history-range {
+      position: absolute;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      border-radius: var(--radius-sm);
+      opacity: 0.6;
+    }
+
+    .history-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background: var(--accent-success);
+      border-radius: 50%;
+      border: 2px solid white;
+      z-index: 1;
+    }
+
+    .history-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--spacing-sm);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       Comparison Section
+       ============================================ */
+    .comparison-section {
+      margin-top: var(--spacing-xl);
+    }
+
+    .comparison-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .comparison-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .comparison-table-container {
+      overflow-x: auto;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: var(--spacing-md);
+      text-align: center;
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .comparison-table th {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .comparison-table td {
+      background: var(--bg-card);
+    }
+
+    .comparison-table tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    .comparison-table .vehicle-name {
+      font-weight: 600;
+      color: var(--accent-secondary);
+    }
+
+    .comparison-table .price-highlight {
+      font-weight: 700;
+      color: var(--accent-success);
+    }
+
+    .comparison-placeholder {
+      text-align: center;
+      padding: var(--spacing-xl);
+      color: var(--text-muted);
+    }
+
+    /* ============================================
+       Responsive Design
+       ============================================ */
+    @media (max-width: 768px) {
+      .app-container {
+        padding: var(--spacing-md);
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .tab-btn {
+        padding: var(--spacing-md);
+        font-size: 0.875rem;
+      }
+
+      .tab-icon {
+        font-size: 1rem;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .result-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .price-value {
+        font-size: 1.5rem;
+      }
+
+      .comparison-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    /* ============================================
+       Utility Classes
+       ============================================ */
+    .text-success { color: var(--accent-success); }
+    .text-warning { color: var(--accent-warning); }
+    .text-danger { color: var(--accent-danger); }
+    .text-muted { color: var(--text-muted); }
+    
+    .mt-lg { margin-top: var(--spacing-lg); }
+    .mb-lg { margin-bottom: var(--spacing-lg); }
+    .mt-xl { margin-top: var(--spacing-xl); }
+
+    /* ============================================
+       Scrollbar Styling
+       ============================================ */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-primary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <h1>🚗 行將估價系統</h1>
+      <p>專業汽車與機車估價服務</p>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+      <button class="tab-btn active" data-tab="automobile">
+        <span class="tab-icon">🚗</span>
+        <span>汽車估價</span>
+      </button>
+      <button class="tab-btn" data-tab="motorcycle">
+        <span class="tab-icon">🏍️</span>
+        <span>機車估價</span>
+      </button>
+    </div>
+
+    <!-- ==========================================
+         Automobile Tab Content
+         ========================================== -->
+    <div id="automobile" class="tab-content active">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-title-icon">🚗</span>
+          汽車估價資訊
+        </h2>
+        
+        <form id="automobile-form">
+          <div class="form-grid">
+            <!-- 廠牌 -->
+            <div class="form-group">
+              <label for="auto-brand">廠牌</label>
+              <select id="auto-brand" required>
+                <option value="">請選擇廠牌</option>
+                <option value="toyota">Toyota 豐田</option>
+                <option value="honda">Honda 本田</option>
+                <option value="ford">Ford 福特</option>
+                <option value="nissan">Nissan 日產</option>
+                <option value="mazda">Mazda 馬自達</option>
+                <option value="bmw">BMW 寶馬</option>
+                <option value="mercedes">Mercedes-Benz 賓士</option>
+                <option value="audi">Audi 奧迪</option>
+                <option value="lexus">Lexus 凌志</option>
+                <option value="porsche">Porsche 保時捷</option>
+                <option value="volkswagen">Volkswagen 福斯</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+
+            <!-- 型式 -->
+            <div class="form-group">
+              <label for="auto-model">型式</label>
+              <input type="text" id="auto-model" placeholder="例如：Camry、CR-V、Model 3" required>
+            </div>
+
+            <!-- 出廠年月 -->
+            <div class="form-group">
+              <label for="auto-year">出廠年月</label>
+              <input type="text" id="auto-year" placeholder="YYYY.MM 例如：2022.08" pattern="\d{4}\.\d{2}" required>
+            </div>
+
+            <!-- 排氣量 -->
+            <div class="form-group">
+              <label for="auto-cc">排氣量 (cc)</label>
+              <input type="number" id="auto-cc" placeholder="例如：2000" min="500" max="8000" required>
+            </div>
+
+            <!-- 里程數 -->
+            <div class="form-group">
+              <label for="auto-km">里程數 (KM)</label>
+              <input type="number" id="auto-km" placeholder="例如：50000" min="0" required>
+            </div>
+
+            <!-- 評價值 -->
+            <div class="form-group">
+              <label for="auto-grade">評價值</label>
+              <select id="auto-grade" required>
+                <option value="">請選擇評價值</option>
+                <option value="A+">A+ - 優秀</option>
+                <option value="A">A - 良好</option>
+                <option value="B+">B+ - 佳</option>
+                <option value="B">B - 普通</option>
+                <option value="C">C - 較差</option>
+                <option value="D">D - 差</option>
+                <option value="E">E - 很差</option>
+                <option value="N">N - 新車</option>
+              </select>
+            </div>
+
+            <!-- 排檔 -->
+            <div class="form-group">
+              <label for="auto-transmission">排檔</label>
+              <select id="auto-transmission" required>
+                <option value="">請選擇排檔類型</option>
+                <option value="auto">自排 (AT)</option>
+                <option value="cvt">手自排 (CVT)</option>
+                <option value="manual">手排 (MT)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+              <span>🔍</span> 開始估價
+            </button>
+            <button type="button" class="btn btn-success" id="add-to-compare-auto">
+              <span>➕</span> 新增比較
+            </button>
+            <button type="reset" class="btn btn-secondary">
+              <span>🔄</span> 重設
+            </button>
+          </div>
+        </form>
+
+        <!-- Result Section (Hidden by default) -->
+        <div id="automobile-result" class="result-section" style="display: none;">
+          <div class="result-card">
+            <div class="result-header">
+              <span class="result-title">📊 估價結果</span>
+              <div class="price-range">
+                <span class="price-label">預估價格區間</span>
+                <span class="price-value" id="auto-price">--</span>
+                <span class="price-unit">NT$</span>
+              </div>
+            </div>
+            <div class="result-details">
+              <div class="result-item">
+                <span class="result-item-label">CP值評級</span>
+                <div class="rating" id="auto-rating">
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                </div>
+              </div>
+              <div class="result-item">
+                <span class="result-item-label">評語</span>
+                <span class="result-item-value" id="auto-comment">--</span>
+              </div>
+              <div class="result-item">
+                <span class="result-item-label">建議價格</span>
+                <span class="result-item-value text-success" id="auto-suggested">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historical Price Reference -->
+          <div class="history-section">
+            <div class="history-title">📈 同型式/同年式歷史成交範圍</div>
+            <div class="history-bar">
+              <div class="history-range" id="auto-history-range"></div>
+              <div class="history-marker" id="auto-history-marker"></div>
+            </div>
+            <div class="history-labels">
+              <span id="auto-history-low">--</span>
+              <span id="auto-history-high">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         Motorcycle Tab Content
+         ========================================== -->
+    <div id="motorcycle" class="tab-content">
+      <div class="card">
+        <h2 class="card-title">
+          <span class="card-title-icon">🏍️</span>
+          機車估價資訊
+        </h2>
+        
+        <form id="motorcycle-form">
+          <div class="form-grid">
+            <!-- 廠牌 -->
+            <div class="form-group">
+              <label for="moto-brand">廠牌</label>
+              <select id="moto-brand" required>
+                <option value="">請選擇廠牌</option>
+                <option value="yamaha">Yamaha 山葉</option>
+                <option value="sym">SYM 三陽</option>
+                <option value="ktm">KTM</option>
+                <option value="honda">Honda 本田</option>
+                <option value="suzuki">Suzuki 鈴木</option>
+                <option value="kawasaki">Kawasaki 川崎</option>
+                <option value="gogoro">Gogoro 睿能</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+
+            <!-- 型式 -->
+            <div class="form-group">
+              <label for="moto-model">型式</label>
+              <input type="text" id="moto-model" placeholder="例如：R3、CBR500R、Force" required>
+            </div>
+
+            <!-- 年份 -->
+            <div class="form-group">
+              <label for="moto-year">出廠年份</label>
+              <input type="text" id="moto-year" placeholder="YYYY 例如：2022" pattern="\d{4}" required>
+            </div>
+
+            <!-- 里程數 -->
+            <div class="form-group">
+              <label for="moto-km">里程數 (KM)</label>
+              <input type="number" id="moto-km" placeholder="例如：10000" min="0" required>
+            </div>
+
+            <!-- 評價值 -->
+            <div class="form-group">
+              <label for="moto-grade">評價值</label>
+              <select id="moto-grade" required>
+                <option value="">請選擇評價值</option>
+                <option value="A+">A+ - 優秀</option>
+                <option value="A">A - 良好</option>
+                <option value="B+">B+ - 佳</option>
+                <option value="B">B - 普通</option>
+                <option value="C">C - 較差</option>
+                <option value="D">D - 差</option>
+                <option value="E">E - 很差</option>
+                <option value="N">N - 新車</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+              <span>🔍</span> 開始估價
+            </button>
+            <button type="button" class="btn btn-success" id="add-to-compare-moto">
+              <span>➕</span> 新增比較
+            </button>
+            <button type="reset" class="btn btn-secondary">
+              <span>🔄</span> 重設
+            </button>
+          </div>
+        </form>
+
+        <!-- Result Section (Hidden by default) -->
+        <div id="motorcycle-result" class="result-section" style="display: none;">
+          <div class="result-card">
+            <div class="result-header">
+              <span class="result-title">📊 估價結果</span>
+              <div class="price-range">
+                <span class="price-label">預估價格區間</span>
+                <span class="price-value" id="moto-price">--</span>
+                <span class="price-unit">NT$</span>
+              </div>
+            </div>
+            <div class="result-details">
+              <div class="result-item">
+                <span class="result-item-label">CP值評級</span>
+                <div class="rating" id="moto-rating">
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                  <span class="rating-star empty">★</span>
+                </div>
+              </div>
+              <div class="result-item">
+                <span class="result-item-label">評語</span>
+                <span class="result-item-value" id="moto-comment">--</span>
+              </div>
+              <div class="result-item">
+                <span class="result-item-label">建議價格</span>
+                <span class="result-item-value text-success" id="moto-suggested">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Historical Price Reference -->
+          <div class="history-section">
+            <div class="history-title">📈 同型式/同年式歷史成交範圍</div>
+            <div class="history-bar">
+              <div class="history-range" id="moto-history-range"></div>
+              <div class="history-marker" id="moto-history-marker"></div>
+            </div>
+            <div class="history-labels">
+              <span id="moto-history-low">--</span>
+              <span id="moto-history-high">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         Comparison Section
+         ========================================== -->
+    <section class="comparison-section card">
+      <div class="comparison-header">
+        <h2 class="comparison-title">
+          <span>📋</span> 車款比較
+        </h2>
+        <button type="button" class="btn btn-danger" id="clear-comparison">
+          <span>🗑️</span> 清除比較
+        </button>
+      </div>
+
+      <div id="comparison-container">
+        <div class="comparison-placeholder" id="comparison-empty">
+          <p>尚無比較項目</p>
+          <p class="text-muted">點擊「新增比較」將車輛加入比較表</p>
+        </div>
+        <div class="comparison-table-container" id="comparison-table-container" style="display: none;">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>項目</th>
+                <th id="compare-col-1">車款 1</th>
+                <th id="compare-col-2">車款 2</th>
+                <th id="compare-col-3">車款 3</th>
+              </tr>
+            </thead>
+            <tbody id="comparison-tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ============================================
+    // 預測時呼叫方式（模型完成後實作）：
+    // fetch('/api/predict', {method:'POST', body: {...}})
+    // 現階段用 mock data 展示 UI
+    // ============================================
+
+    // ============================================
+    // Tab Switching Logic
+    // ============================================
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        
+        // Update active tab button
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Update active tab content
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+          if (content.id === targetTab) {
+            content.classList.add('active');
+          }
+        });
+      });
+    });
+
+    // ============================================
+    // Mock Data for Demonstration
+    // ============================================
+    const mockPrices = {
+      automobile: {
+        base: 500000,
+        factors: {
+          brand: { toyota: 1.0, honda: 1.05, ford: 0.9, nissan: 0.95, mazda: 1.0, bmw: 1.5, mercedes: 1.6, audi: 1.45, lexus: 1.35, porsche: 1.8, volkswagen: 1.1, other: 0.85 },
+          grade: { 'A+': 1.2, 'A': 1.1, 'B+': 1.0, 'B': 0.9, 'C': 0.75, 'D': 0.6, 'E': 0.45, 'N': 1.3 },
+          transmission: { auto: 1.0, cvt: 0.98, manual: 0.92 }
+        },
+        depreciation: 0.85 // annual depreciation rate
+      },
+      motorcycle: {
+        base: 80000,
+        factors: {
+          brand: { yamaha: 1.0, sym: 0.9, ktm: 1.3, honda: 1.05, suzuki: 1.0, kawasaki: 1.25, gogoro: 0.95, other: 0.8 },
+          grade: { 'A+': 1.15, 'A': 1.08, 'B+': 1.0, 'B': 0.9, 'C': 0.75, 'D': 0.6, 'E': 0.45, 'N': 1.2 }
+        },
+        depreciation: 0.82 // annual depreciation rate
+      }
+    };
+
+    const cpComments = {
+      5: '極高 CP 值，性價比絕佳！',
+      4: '高 CP 值，物超所值',
+      3: '中等 CP 值，價格合理',
+      2: '較低 CP 值，建議議價',
+      1: '低 CP 值，謹慎考慮'
+    };
+
+    // ============================================
+    // Price Calculation Functions
+    // ============================================
+    function calculateAutoPrice(formData) {
+      const { brand, model, year, cc, km, grade, transmission } = formData;
+      const currentYear = new Date().getFullYear();
+      const carAge = currentYear - parseInt(year.split('.')[0]);
+      
+      let price = mockPrices.automobile.base;
+      
+      // Apply brand factor
+      price *= mockPrices.automobile.factors.brand[brand] || 1.0;
+      
+      // Apply grade factor
+      price *= mockPrices.automobile.factors.grade[grade] || 1.0;
+      
+      // Apply transmission factor
+      price *= mockPrices.automobile.factors.transmission[transmission] || 1.0;
+      
+      // Apply CC factor (cc/2000)
+      price *= (parseInt(cc) / 2000);
+      
+      // Apply depreciation
+      price *= Math.pow(mockPrices.automobile.depreciation, carAge);
+      
+      // Apply mileage adjustment (-5% per 20000km over 10000km)
+      const kmFactor = Math.max(0.5, 1 - (Math.max(0, parseInt(km) - 10000) / 20000 * 0.05));
+      price *= kmFactor;
+      
+      return Math.round(price);
+    }
+
+    function calculateMotoPrice(formData) {
+      const { brand, model, year, km, grade } = formData;
+      const currentYear = new Date().getFullYear();
+      const bikeAge = currentYear - parseInt(year);
+      
+      let price = mockPrices.motorcycle.base;
+      
+      // Apply brand factor
+      price *= mockPrices.motorcycle.factors.brand[brand] || 1.0;
+      
+      // Apply grade factor
+      price *= mockPrices.motorcycle.factors.grade[grade] || 1.0;
+      
+      // Apply depreciation
+      price *= Math.pow(mockPrices.motorcycle.depreciation, bikeAge);
+      
+      // Apply mileage adjustment
+      const kmFactor = Math.max(0.5, 1 - (Math.max(0, parseInt(km) - 5000) / 10000 * 0.05));
+      price *= kmFactor;
+      
+      return Math.round(price);
+    }
+
+    function calculateCPRating(price, basePrice) {
+      const ratio = basePrice / price;
+      if (ratio >= 1.3) return 5;
+      if (ratio >= 1.15) return 4;
+      if (ratio >= 1.0) return 3;
+      if (ratio >= 0.85) return 2;
+      return 1;
+    }
+
+    function getBasePrice(type, formData) {
+      if (type === 'automobile') {
+        return calculateAutoPrice({
+          ...formData,
+          brand: 'toyota',
+          grade: 'B+',
+          transmission: 'auto',
+          year: '2020.01',
+          cc: '2000',
+          km: '30000'
+        });
+      } else {
+        return calculateMotoPrice({
+          ...formData,
+          brand: 'yamaha',
+          grade: 'B+',
+          year: '2020',
+          km: '5000'
+        });
+      }
+    }
+
+    // ============================================
+    // Form Submission Handlers
+    // ============================================
+    document.getElementById('automobile-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        brand: document.getElementById('auto-brand').value,
+        model: document.getElementById('auto-model').value,
+        year: document.getElementById('auto-year').value,
+        cc: document.getElementById('auto-cc').value,
+        km: document.getElementById('auto-km').value,
+        grade: document.getElementById('auto-grade').value,
+        transmission: document.getElementById('auto-transmission').value
+      };
+
+      const price = calculateAutoPrice(formData);
+      const basePrice = getBasePrice('automobile', formData);
+      const cpRating = calculateCPRating(price, basePrice);
+      const lowPrice = Math.round(price * 0.9);
+      const highPrice = Math.round(price * 1.1);
+
+      displayAutoResult(price, lowPrice, highPrice, cpRating);
+      storeComparisonData('automobile', formData, price, cpRating);
+    });
+
+    document.getElementById('motorcycle-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        brand: document.getElementById('moto-brand').value,
+        model: document.getElementById('moto-model').value,
+        year: document.getElementById('moto-year').value,
+        km: document.getElementById('moto-km').value,
+        grade: document.getElementById('moto-grade').value
+      };
+
+      const price = calculateMotoPrice(formData);
+      const basePrice = getBasePrice('motorcycle', formData);
+      const cpRating = calculateCPRating(price, basePrice);
+      const lowPrice = Math.round(price * 0.9);
+      const highPrice = Math.round(price * 1.1);
+
+      displayMotoResult(price, lowPrice, highPrice, cpRating);
+      storeComparisonData('motorcycle', formData, price, cpRating);
+    });
+
+    // ============================================
+    // Display Results
+    // ============================================
+    function displayAutoResult(price, lowPrice, highPrice, cpRating) {
+      const resultSection = document.getElementById('automobile-result');
+      resultSection.style.display = 'block';
+      
+      document.getElementById('auto-price').textContent = `${lowPrice.toLocaleString()} ~ ${highPrice.toLocaleString()}`;
+      document.getElementById('auto-suggested').textContent = `NT$ ${price.toLocaleString()}`;
+      document.getElementById('auto-comment').textContent = cpComments[cpRating];
+      
+      // Update rating stars
+      const ratingContainer = document.getElementById('auto-rating');
+      ratingContainer.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = `rating-star ${i <= cpRating ? '' : 'empty'}`;
+        star.textContent = '★';
+        ratingContainer.appendChild(star);
+      }
+      
+      // Update history bar
+      const rangeStart = lowPrice * 0.7;
+      const rangeEnd = highPrice * 1.3;
+      const rangeWidth = ((highPrice - lowPrice) / (rangeEnd - rangeStart)) * 100;
+      const markerPosition = ((price - rangeStart) / (rangeEnd - rangeStart)) * 100;
+      
+      document.getElementById('auto-history-range').style.width = `${rangeWidth}%`;
+      document.getElementById('auto-history-range').style.left = `${((lowPrice - rangeStart) / (rangeEnd - rangeStart)) * 100}%`;
+      document.getElementById('auto-history-marker').style.left = `${markerPosition}%`;
+      document.getElementById('auto-history-low').textContent = `NT$ ${Math.round(rangeStart).toLocaleString()}`;
+      document.getElementById('auto-history-high').textContent = `NT$ ${Math.round(rangeEnd).toLocaleString()}`;
+      
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function displayMotoResult(price, lowPrice, highPrice, cpRating) {
+      const resultSection = document.getElementById('motorcycle-result');
+      resultSection.style.display = 'block';
+      
+      document.getElementById('moto-price').textContent = `${lowPrice.toLocaleString()} ~ ${highPrice.toLocaleString()}`;
+      document.getElementById('moto-suggested').textContent = `NT$ ${price.toLocaleString()}`;
+      document.getElementById('moto-comment').textContent = cpComments[cpRating];
+      
+      // Update rating stars
+      const ratingContainer = document.getElementById('moto-rating');
+      ratingContainer.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = `rating-star ${i <= cpRating ? '' : 'empty'}`;
+        star.textContent = '★';
+        ratingContainer.appendChild(star);
+      }
+      
+      // Update history bar
+      const rangeStart = lowPrice * 0.7;
+      const rangeEnd = highPrice * 1.3;
+      const rangeWidth = ((highPrice - lowPrice) / (rangeEnd - rangeStart)) * 100;
+      const markerPosition = ((price - rangeStart) / (rangeEnd - rangeStart)) * 100;
+      
+      document.getElementById('moto-history-range').style.width = `${rangeWidth}%`;
+      document.getElementById('moto-history-range').style.left = `${((lowPrice - rangeStart) / (rangeEnd - rangeStart)) * 100}%`;
+      document.getElementById('moto-history-marker').style.left = `${markerPosition}%`;
+      document.getElementById('moto-history-low').textContent = `NT$ ${Math.round(rangeStart).toLocaleString()}`;
+      document.getElementById('moto-history-high').textContent = `NT$ ${Math.round(rangeEnd).toLocaleString()}`;
+      
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ============================================
+    // Comparison Data Management
+    // ============================================
+    let comparisonData = [];
+
+    function storeComparisonData(type, formData, price, cpRating) {
+      // Check if already in comparison
+      const existingIndex = comparisonData.findIndex(item => 
+        item.type === type && item.model === (type === 'automobile' ? formData.model : formData.model)
+      );
+      
+      if (existingIndex >= 0) {
+        comparisonData[existingIndex] = { type, ...formData, price, cpRating };
+      } else if (comparisonData.length < 3) {
+        comparisonData.push({ type, ...formData, price, cpRating });
+      } else {
+        alert('最多只能加入 3 台車進行比較');
+        return;
+      }
+      
+      updateComparisonTable();
+    }
+
+    function updateComparisonTable() {
+      const emptyMsg = document.getElementById('comparison-empty');
+      const tableContainer = document.getElementById('comparison-table-container');
+      
+      if (comparisonData.length === 0) {
+        emptyMsg.style.display = 'block';
+        tableContainer.style.display = 'none';
+        return;
+      }
+      
+      emptyMsg.style.display = 'none';
+      tableContainer.style.display = 'block';
+      
+      // Update column headers
+      for (let i = 0; i < 3; i++) {
+        const col = document.getElementById(`compare-col-${i + 1}`);
+        if (comparisonData[i]) {
+          const brandName = comparisonData[i].brand.toUpperCase();
+          const modelName = comparisonData[i].model;
+          col.textContent = `${brandName} ${modelName}`;
+          col.style.color = 'var(--accent-secondary)';
+        } else {
+          col.textContent = '-';
+          col.style.color = 'var(--text-muted)';
+        }
+      }
+      
+      // Build table rows
+      const tbody = document.getElementById('comparison-tbody');
+      tbody.innerHTML = '';
+      
+      const rows = [
+        { label: '類型', key: 'typeDisplay', format: v => v === 'automobile' ? '🚗 汽車' : '🏍️ 機車' },
+        { label: '年份', key: 'year', format: v => v },
+        { label: '里程', key: 'km', format: v => `${parseInt(v).toLocaleString()} KM` },
+        { label: '評價', key: 'grade', format: v => v },
+        { label: '估價', key: 'price', format: v => `NT$ ${parseInt(v).toLocaleString()}`, highlight: true },
+        { label: 'CP值', key: 'cpRating', format: v => '★'.repeat(v) + '☆'.repeat(5 - v) }
+      ];
+      
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${row.label}</strong></td>`;
+        
+        for (let i = 0; i < 3; i++) {
+          const td = document.createElement('td');
+          if (comparisonData[i]) {
+            let value = comparisonData[i][row.key];
+            if (row.key === 'type') {
+              value = comparisonData[i].type === 'automobile' ? 
+                (comparisonData[i].brand + ' ' + comparisonData[i].model) : 
+                (comparisonData[i].brand + ' ' + comparisonData[i].model);
+            } else if (row.key === 'year') {
+              value = comparisonData[i].type === 'automobile' ? comparisonData[i].year : comparisonData[i].year;
+            }
+            
+            if (row.highlight) {
+              td.className = 'price-highlight';
+            }
+            td.textContent = row.format(value);
+          } else {
+            td.textContent = '-';
+            td.className = 'text-muted';
+          }
+          tr.appendChild(td);
+        }
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ============================================
+    // Add to Comparison Buttons
+    // ============================================
+    document.getElementById('add-to-compare-auto').addEventListener('click', function() {
+      const form = document.getElementById('automobile-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      const formData = {
+        brand: document.getElementById('auto-brand').value,
+        model: document.getElementById('auto-model').value,
+        year: document.getElementById('auto-year').value,
+        cc: document.getElementById('auto-cc').value,
+        km: document.getElementById('auto-km').value,
+        grade: document.getElementById('auto-grade').value,
+        transmission: document.getElementById('auto-transmission').value
+      };
+      
+      const price = calculateAutoPrice(formData);
+      const basePrice = getBasePrice('automobile', formData);
+      const cpRating = calculateCPRating(price, basePrice);
+      
+      storeComparisonData('automobile', formData, price, cpRating);
+    });
+
+    document.getElementById('add-to-compare-moto').addEventListener('click', function() {
+      const form = document.getElementById('motorcycle-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      const formData = {
+        brand: document.getElementById('moto-brand').value,
+        model: document.getElementById('moto-model').value,
+        year: document.getElementById('moto-year').value,
+        km: document.getElementById('moto-km').value,
+        grade: document.getElementById('moto-grade').value
+      };
+      
+      const price = calculateMotoPrice(formData);
+      const basePrice = getBasePrice('motorcycle', formData);
+      const cpRating = calculateCPRating(price, basePrice);
+      
+      storeComparisonData('motorcycle', formData, price, cpRating);
+    });
+
+    document.getElementById('clear-comparison').addEventListener('click', function() {
+      comparisonData = [];
+      updateComparisonTable();
+    });
+
+    // ============================================
+    // Initialize
+    // ============================================
+    console.log('行將估價系統已初始化');
+    console.log('模型完成後替換 mock calculation 為真實 API 呼叫');
+  </script>
+</body>
+</html>
